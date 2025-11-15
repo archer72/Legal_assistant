@@ -1,0 +1,104 @@
+#Clone Project & Prepare Environment
+git clone indian-law-query-assistant
+cd indian-law-query-assistant
+
+#If you downloaded the ZIP:
+unzip indian-law-query-assistant-complete.zip
+cd indian-law-query-assistant
+
+#3. Create Virtual Environment
+python3 -m venv venv
+source venv/bin/activate        # Linux/macOS
+venv\Scripts\activate           # Windows
+
+#4. Install Dependencies
+pip install -r requirements.txt
+
+#Note : before that if you have gpu with CUDA:
+#Install PyTorch matching your CUDA version:
+pip install torch --index-url https://download.pytorch.org/whl/cu118
+#Then:
+pip install -r requirements.txt
+
+#5. Set Up .env:
+cp .env.example .env
+
+#Open .env and set:
+EMBEDDING_MODEL=intfloat/multilingual-e5-small
+LLM_MODEL=HuggingFaceH4/zephyr-7b-beta
+DATA_DIR=./data
+VECTOR_STORE=./vectorstore/faiss_index
+CROSS_ENCODER_MODEL=cross-encoder/ms-marco-MiniLM-L-6-v2
+
+#Your project expects data under:
+data/
+ ├── ipc/
+ ├── rti/
+ ├── sc_judgments/
+ ├── legal_articles/
+
+#Add your text/PDF files there.
+#PDFs will be auto-processed by LangChain loaders.
+
+#7. Ingest Data → Build FAISS Vector Store
+#python ingestion/ingest.py
+python -m ingestion.ingest --data-dir sample_data --index-dir faiss_index
+
+#Outputs:
+vectorstore/faiss_index
+vectorstore/faiss_index.pkl
+#If GPU OOM — use BATCH_SIZE=2 in .env.
+
+#8. Run Backend API Server (FastAPI):
+uvicorn app.api:app --reload --port 8000
+
+#API available at:
+
+📌 http://localhost:8000
+📌 Interactive docs: http://localhost:8000/docs
+
+#Endpoints:
+/ask → RAG answer
+/cross-reference
+/summarize
+/chat → multi-turn memory
+
+#9. Run the Streamlit Frontend
+streamlit run ui/streamlit_app.py
+
+#10. GPU Optimization (Optional but Recommended)
+Tell HuggingFace to use GPU:
+
+#Add this in .env:
+USE_GPU=True
+DEVICE=cuda
+
+#Or modify in llm/generator.py:
+device = 0 if torch.cuda.is_available() else -1
+
+#Reduce VRAM usage (1050 Ti)
+
+#Use 4-bit quantization:
+pip install bitsandbytes
+
+#Modify HuggingFacePipeline loader:
+model = AutoModelForCausalLM.from_pretrained(
+    model_name,
+    load_in_4bit=True,
+    device_map="auto"
+)
+
+#If You Use Transformers / HuggingFace
+#Use a model that supports dynamic device mapping:
+#Example (your code already handles this):
+model = AutoModelForCausalLM.from_pretrained(
+    model_name,
+    torch_dtype=torch.float16,
+    device_map="auto"
+)
+
+#For BitsAndBytes (4-bit / 8-bit quantization)
+#bitsandbytes requires a CUDA-compiled wheel.
+#For CUDA 13 (not officially released), install the source-compiled wheel:
+pip install git+https://github.com/facebookresearch/bitsandbytes.git
+

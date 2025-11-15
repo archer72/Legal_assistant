@@ -1,0 +1,1 @@
+This is a tiny sample file used for smoke-testing the ingestion pipeline. Replace with real statutes, judgments or articles.

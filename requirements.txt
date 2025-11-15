@@ -1,0 +1,24 @@
+fastapi
+uvicorn[standard]
+langchain
+faiss-cpu
+langchain-community
+langchain-core
+langchain-text-splitters
+
+sentence-transformers
+transformers
+torch
+tqdm
+python-multipart
+pydantic
+streamlit
+python-dotenv
+PyPDF2
+accelerate
+
+
+
+
+# Optional but recommended for performance
+ bitsandbytes

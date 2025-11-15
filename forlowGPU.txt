@@ -1,0 +1,35 @@
+💡 Recommended Models for 1050 Ti
+
+Your VRAM: 4 GB
+
+Use:
+google/gemma-2-2b
+HuggingFaceH4/zephyr-7b-beta (4-bit only)
+microsoft/phi-2
+mistralai/Mistral-7B-Instruct-v0.2 (4-bit only)
+
+
+Use 4-bit quantization:
+load_in_4bit=True
+bnb_4bit_compute_dtype="float16"
+bnb_4bit_quant_type="nf4"
+
+#ERROR fixes:
+#“Model too large for GPU memory”
+LLM_MODEL=HuggingFaceH4/zephyr-7b-beta
+#or 3B:
+LLM_MODEL=google/gemma-2b
+
+#Enable 4-bit:
+load_in_4bit=True
+
+#“sentencepiece not installed”
+pip install sentencepiece
+
+#5. Streamlit cannot connect to backend
+
+#Make sure backend runs at 8000
+#And frontend hits correct endpoint:
+#ui/streamlit_app.py:
+API_BASE_URL = "http://localhost:8000"
+
